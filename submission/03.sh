@@ -2,5 +2,6 @@
 # Add funds to the address.
 # Return only the Address
 
-bitcoin-cli -regtest -rpcwallet="btrustwallet" getnewaddress "" "bech32"
+Address=$(bitcoin-cli -regtest -rpcwallet="btrustwallet" getnewaddress "" "bech32")
+bitcoin-cli -regtest -rpcwallet="btrustwallet" generate 101 "$Address"
 
