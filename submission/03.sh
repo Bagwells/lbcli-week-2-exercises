@@ -2,7 +2,7 @@
 # Add funds to the address.
 # Return only the Address
 
-FundedAddr=$(bitcoin-cli -regtest generatetoaddress 101 $(bitcoin-cli -regtest -rpcwallet="btrustwallet" getnewaddress "" "bech32"))
+bitcoin-cli -regtest generatetoaddress 101 $(bitcoin-cli -regtest -rpcwallet="btrustwallet" getnewaddress "" "bech32")
 
-bitcoin-cli -regtest -rpcwallet="btrustwallet" getreceivedbyaddress "$FundedAddr"
+
 
