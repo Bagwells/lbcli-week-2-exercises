@@ -3,3 +3,25 @@
 # Amount of 20,000,000 satoshis to this address: 2MvLcssW49n9atmksjwg2ZCMsEMsoj3pzUP 
 # Use the UTXOs from the transaction below
 # raw_tx="01000000000101c8b0928edebbec5e698d5f86d0474595d9f6a5b2e4e3772cd9d1005f23bdef772500000000ffffffff0276b4fa0000000000160014f848fe5267491a8a5d32423de4b0a24d1065c6030e9c6e000000000016001434d14a23d2ba08d3e3edee9172f0c97f046266fb0247304402205fee57960883f6d69acf283192785f1147a3e11b97cf01a210cf7e9916500c040220483de1c51af5027440565caead6c1064bac92cb477b536e060f004c733c45128012102d12b6b907c5a1ef025d0924a29e354f6d7b1b11b5a7ddff94710d6f0042f3da800000000"
+
+raw_tx="01000000000101c8b0928edebbec5e698d5f86d0474595d9f6a5b2e4e3772cd9d1005f23bdef772500000000ffffffff0276b4fa0000000000160014f848fe5267491a8a5d32423de4b0a24d1065c6030e9c6e000000000016001434d14a23d2ba08d3e3edee9172f0c97f046266fb0247304402205fee57960883f6d69acf283192785f1147a3e11b97cf01a210cf7e9916500c040220483de1c51af5027440565caead6c1064bac92cb477b536e060f004c733c45128012102d12b6b907c5a1ef025d0924a29e354f6d7b1b11b5a7ddff94710d6f0042f3da800000000"
+
+recipient_address="2MvLcssW49n9atmksjwg2ZCMsEMsoj3pzUP"
+
+raw_tx_decoded_txid=$(bitcoin-cli -regtest decoderawtransaction "$raw_tx" | jq -r '.txid')
+
+raw_tx_decoded_vout=$(bitcoin-cli -regtest decoderawtransaction "$raw_tx" | jq -r '[.vout[].value * 10000000] | add | round')
+
+send_sat=20000000
+fee_sat=20000
+change_sat=$((raw_tx_decoded_vout - send_sat - fee_sat))
+
+change_address=$(bitcoin-cli -regtest -rpcwallet="btrustwallet" getnewaddress)
+
+btc_to_send=$(awk -v s="$send_sat" 'BEGIN {printf "%.8f", s/100000000}')
+btc_change=$(awk -v s="$change_sat" 'BEGIN {printf "%.8f", s/100000000}')
+
+
+new_raw_tx=$(bitcoin-cli -regtest createrawtransaction '''[{"txid":"$raw_tx_decoded_txid","vout":0}, {"txid":"$raw_tx_decoded_txid","vout":1}]''' '''{"$recipient_address":$btc_to_send,"$change_address":$btc_change}''' true)
+
+echo "$new_raw_tx"
