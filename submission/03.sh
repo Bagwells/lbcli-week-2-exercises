@@ -4,7 +4,7 @@
 
 ADDR=$(bitcoin-cli -regtest -rpcwallet=btrustwallet getnewaddress "" "bech32")
 
-SENDER_ADDR=$(bitcoin-cli -regtest -rpcwallet=btrustwallet getnewaddress)
+SENDER_ADDR=$(bitcoin-cli -regtest getnewaddress)
 bitcoin-cli -regtest generatetoaddress 101 "$SENDER_ADDR"
 
 bitcoin-cli -regtest -rpcwallet=btrustwallet sendtoaddress "$ADDR" 1
