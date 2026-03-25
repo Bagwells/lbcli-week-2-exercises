@@ -168,7 +168,7 @@ PAYMENT_ADDRESS="2MvLcssW49n9atmksjwg2ZCMsEMsoj3pzUP"
 CHANGE_ADDRESS="bcrt1qg09ftw43jvlhj4wlwwhkxccjzmda3kdm4y83ht"
 
 # STUDENT TASK: Create a proper input JSON for createrawtransaction
-TX_INPUTS="[{\"txid\":\"$raw_tx_decoded_txid\",\"vout\":0,\"sequence\":4294967293}]"
+TX_INPUTS="[{\"txid\":\"$TXID\",\"vout\":$UTXO_VOUT_INDEX,\"sequence\":4294967293}]"
 check_cmd "Input JSON creation" "TX_INPUTS" "$TX_INPUTS"
 
 # Verify RBF is enabled in the input structure
@@ -192,7 +192,7 @@ TX_OUTPUTS="{\"$PAYMENT_ADDRESS\":$PAYMENT_BTC,\"$CHANGE_ADDRESS\":$CHANGE_BTC}"
 check_cmd "Output JSON creation" "TX_OUTPUTS" "$TX_OUTPUTS"
 
 # STUDENT TASK: Create the raw transaction
-RAW_TX=$(bitcoin-cli -regtest createreawtransaction "$TX_INPUTS" "$TX_OUTPUTS" 0 true)
+RAW_TX=$(bitcoin-cli -regtest createrawtransaction "$TX_INPUTS" "$TX_OUTPUTS" 0 true)
 check_cmd "Raw transaction creation" "RAW_TX" "$RAW_TX"
 
 echo "Successfully created raw transaction!"
@@ -215,13 +215,13 @@ check_cmd "Transaction decoding" "DECODED_TX" "$DECODED_TX"
 
 # STUDENT TASK: Extract and verify the key components from the decoded transaction
 # WRITE YOUR SOLUTION BELOW:
-VERIFY_RBF=$("$DECODED_TX" | jq -r '(.vin[0].sequence < 4294967295) | tostring')
+VERIFY_RBF=$(echo "$DECODED_TX" | jq -r '(.vin[0].sequence < 4294967295) | tostring')
 check_cmd "RBF verification" "VERIFY_RBF" "$VERIFY_RBF"
 
-VERIFY_PAYMENT=$("$DECODED_TX" | jq -r '.vout[0].value | tostring')
+VERIFY_PAYMENT=$(echo "$DECODED_TX" | jq -r '.vout[0].value | tostring')
 check_cmd "Payment verification" "VERIFY_PAYMENT" "$VERIFY_PAYMENT"
 
-VERIFY_CHANGE=$("$DECODED_TX" | jq -r '.vout[1].value | tostring')
+VERIFY_CHANGE=$(echo "$DECODED_TX" | jq -r '.vout[1].value | tostring')
 check_cmd "Change verification" "VERIFY_CHANGE" "$VERIFY_CHANGE"
 
 echo "Verification Results:"
@@ -257,7 +257,7 @@ SIMPLE_TX_INPUTS='[{"txid":"'$TXID'","vout":0,"sequence":4294967293}]'
 SIMPLE_TX_OUTPUTS='{"'$TEST_ADDRESS'":0.0001}'
 
 # Create a raw transaction for signing using the SIMPLE_TX_INPUTS and SIMPLE_TX_OUTPUTS
-SIMPLE_RAW_TX=$(bitcoin-cli -regtest createreawtransaction "$SIMPLE_TX_INPUTS" "$SIMPLE_TX_OUTPUTS" 0 true)
+SIMPLE_RAW_TX=$(bitcoin-cli -regtest createrawtransaction "$SIMPLE_TX_INPUTS" "$SIMPLE_TX_OUTPUTS" 0 true)
 check_cmd "Simple transaction creation" "SIMPLE_RAW_TX" "$SIMPLE_RAW_TX"
 
 echo "Simple transaction created: ${SIMPLE_RAW_TX:0:64}... (truncated)"
@@ -311,7 +311,7 @@ check_cmd "Child fee calculation" "CHILD_FEE_SATS" "$CHILD_FEE_SATS"
 
 # Calculate the amount to send after deducting fee
 CHILD_RECIPIENT="2MvM2nZjueT9qQJgZh7LBPoudS554B6arQc"
-CHILD_SEND_AMOUNT=$(($CHANGE_BTC - $CHILD_FEE_SATS))
+CHILD_SEND_AMOUNT=$((CHANGE_AMOUNT - $CHILD_FEE_SATS))
 check_cmd "Child amount calculation" "CHILD_SEND_AMOUNT" "$CHILD_SEND_AMOUNT"
 
 # Convert to BTC
@@ -322,7 +322,7 @@ CHILD_OUTPUTS="{\"$CHILD_RECIPIENT\":$CHILD_SEND_BTC}"
 check_cmd "Child output creation" "CHILD_OUTPUTS" "$CHILD_OUTPUTS"
 
 # STUDENT TASK: Create the raw child transaction
-CHILD_RAW_TX=$(bitcoin-cli -regtest createreawtransaction "$CHILD_INPUTS" "$CHILD_OUTPUTS" 0 true)
+CHILD_RAW_TX=$(bitcoin-cli -regtest createrawtransaction "$CHILD_INPUTS" "$CHILD_OUTPUTS" 0 true)
 check_cmd "Child transaction creation" "CHILD_RAW_TX" "$CHILD_RAW_TX"
 
 echo "Successfully created child transaction with higher fee!"
@@ -366,14 +366,14 @@ TIMELOCK_AMOUNT=$(echo "$SECONDARY_OUTPUT_VALUE - $TIMELOCK_FEE" | bc)
 check_cmd "Timelock amount calculation" "TIMELOCK_AMOUNT" "$TIMELOCK_AMOUNT"
 
 # Convert to BTC
-TIMELOCK_BTC=$(printf "%.8f" "$TIMELOCK_AMOUNT")
+TIMELOCK_BTC=$(awk -v s="$TIMELOCK_AMOUNT" 'BEGIN { printf "%.8f", s/100000000 }')
 
 # STUDENT TASK: Create the outputs JSON structure
 TIMELOCK_OUTPUTS="{\"$TIMELOCK_ADDRESS\":$TIMELOCK_BTC}"
 check_cmd "Timelock output creation" "TIMELOCK_OUTPUTS" "$TIMELOCK_OUTPUTS"
 
 # STUDENT TASK: Create the raw transaction with timelock
-TIMELOCK_TX=$(bitcoin-cli -regtest createreawtransaction "$TIMELOCK_INPUTS" "$TIMELOCK_OUTPUTS" 0 true)
+TIMELOCK_TX=$(bitcoin-cli -regtest createrawtransaction "$TIMELOCK_INPUTS" "$TIMELOCK_OUTPUTS" 0 true)
 check_cmd "Timelock transaction creation" "TIMELOCK_TX" "$TIMELOCK_TX"
 
 echo "Successfully created transaction with 10-block relative timelock!"
