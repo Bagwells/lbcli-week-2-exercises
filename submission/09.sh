@@ -20,10 +20,8 @@
 
   change_sat=$((total_sats - send_sat - fee_sat))
 
-  change_address=$(bitcoin-cli -regtest -rpcwallet=btrustwallet getnewaddress)
-
   btc_to_send=$(awk -v s="$send_sat" 'BEGIN {printf "%.8f", s/100000000}')
 
   btc_change=$(awk -v s="$change_sat" 'BEGIN {printf "%.8f", s/100000000}') 
 
-  bitcoin-cli -regtest -named createrawtransaction inputs="[{\"txid\":\"$raw_tx_decoded_txid\",\"vout\":0,\"sequence\":1},{\"txid\":\"$raw_tx_decoded_txid\",\"vout\":1,\"sequence\":1}]" outputs="{\"$recipient_address\":$btc_to_send,\"$change_address\":$btc_change}" locktime=0 replaceable=false 
+  bitcoin-cli -regtest -named createrawtransaction inputs="[{\"txid\":\"$raw_tx_decoded_txid\",\"vout\":0,\"sequence\":1},{\"txid\":\"$raw_tx_decoded_txid\",\"vout\":1,\"sequence\":1}]" outputs="{\"$recipient_address\":$btc_to_send}" locktime=0 replaceable=false version=2
