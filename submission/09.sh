@@ -24,4 +24,4 @@
 
   btc_change=$(awk -v s="$change_sat" 'BEGIN {printf "%.8f", s/100000000}') 
 
-  bitcoin-cli -regtest -named createrawtransaction inputs="[{\"txid\":\"$raw_tx_decoded_txid\",\"vout\":0,\"sequence\":1},{\"txid\":\"$raw_tx_decoded_txid\",\"vout\":1,\"sequence\":1}]" outputs="{\"$recipient_address\":$btc_to_send}" locktime=0 replaceable=false version=2
+  bitcoin-cli -regtest -named createrawtransaction inputs="[{\"txid\":\"$raw_tx_decoded_txid\",\"vout\":0,\"sequence\":1},{\"txid\":\"$raw_tx_decoded_txid\",\"vout\":1,\"sequence\":1}]" outputs="{\"$recipient_address\":$btc_to_send}" locktime=0 replaceable=false
