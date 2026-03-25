@@ -20,7 +20,6 @@ change_address=$(bitcoin-cli -regtest -rpcwallet="btrustwallet" getnewaddress)
 btc_to_send=$(awk -v s="$send_sat" 'BEGIN {printf "%.8f", s/100000000}')
 btc_change=$(awk -v s="$change_sat" 'BEGIN {printf "%.8f", s/100000000}')
 
-
 new_raw_tx=$(bitcoin-cli -regtest createrawtransaction "[{\"txid\":\"$utxo_txid\",\"vout\":0},{\"txid\":\"$utxo_txid\",\"vout\":1}]" "{\"$recipient_address\":$send_btc}")
 
 echo "$new_raw_tx"

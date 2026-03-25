@@ -9,14 +9,12 @@ raw_tx="01000000000101c8b0928edebbec5e698d5f86d0474595d9f6a5b2e4e3772cd9d1005f23
 
 raw_tx_decoded_txid=$(bitcoin-cli -regtest decoderawtransaction "$raw_tx" | jq -r '.txid')
 
-total_btc=$(bitcoin-cli -regtest decoderawtransaction "$raw_tx" | jq -r '[.vout[].value] | add')
+total_btc=$(bitcoin-cli -regtest decoderawtransaction "$raw_tx" | jq -r '[.vout[].value | tonumber] | add')
 
 tx_fee=20000
 
-sats_to_send=$((total_btc * 100000000 - tx_fee))
+sats_to_send=$(awk -v b="$total_btc" -v f="$tx_fee" 'BEGIN { print int(b*100000000+0.5) - f }')
 
-send_btc=$(awk -v s="$sats_to_send" 'BEGIN {printf "%.8f", s/100000000}')
+send_btc=$(awk -v s="$sats_to_send" 'BEGIN { printf "%.8f", s/100000000 }')
 
-new_raw_tx=bitcoin-cli -regtest createrawtransaction "[{\"txid\":\"$utxo_txid\",\"vout\":0},{\"txid\":\"$utxo_txid\",\"vout\":1}]" "{\"$recipient_address\":$send_btc}"
-
-echo "$new_raw_tx"
+bitcoin-cli -regtest createrawtransaction "[{\"txid\":\"$raw_tx_decoded_txid\",\"vout\":0},{\"txid\":\"$raw_tx_decoded_txid\",\"vout\":1}]" "{\"$recipient_address\":$send_btc}"
