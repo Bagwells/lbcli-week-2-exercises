@@ -8,16 +8,12 @@
 
   recipient_address="2MvLcssW49n9atmksjwg2ZCMsEMsoj3pzUP"
 
-  raw_tx_decoded_txid=$(bitcoin-cli -regtest decoderawtransaction "$raw_tx" | jq -r '.txid')
-  total_sats=$(bitcoin-cli -regtest decoderawtransaction "$raw_tx" | jq -r '[.vout[].value | tonumber * 100000000 | floor] | add')
-
-  send_sat=20000000
-  fee_sat=20000
-  change_sat=$((total_sats - send_sat - fee_sat))
+  raw_tx_decoded_txid=$(bitcoin-cli -regtest decoderawtransaction "$raw_tx" 2>/dev/null | jq -r '.txid')
+  total_sats=$(bitcoin-cli -regtest decoderawtransaction "$raw_tx" 2>/dev/null | jq -r '[.vout[].value | tonumber * 100000000 | floor] | add')
 
   change_address=$(bitcoin-cli -regtest -rpcwallet="btrustwallet" getnewaddress)
 
   btc_to_send=$(awk -v s="$send_sat" 'BEGIN {printf "%.8f", s/100000000}')
   btc_change=$(awk -v s="$change_sat" 'BEGIN {printf "%.8f", s/100000000}')
   
-  bitcoin-cli -regtest createrawtransaction "[{\"txid\":\"$raw_tx_decoded_txid\",\"vout\":0},{\"txid\":\"$raw_tx_decoded_txid\",\"vout\":1}]" "{\"$recipient_address\":$btc_to_send,\"$change_address\":$btc_change}" 0 true
+  bitcoin-cli -regtest -named createrawtransaction inputs="[{\"txid\":\"$txid\",\"vout\":0,\"sequence\":1},{\"txid\":\"$txid\",\"vout\":1,\"sequence\":1}]" outputs="{\"$recipient_address\":0.2}" locktime=0 replaceable=false version=2
