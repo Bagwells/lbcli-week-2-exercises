@@ -315,7 +315,7 @@ CHILD_SEND_AMOUNT=$((CHANGE_AMOUNT - $CHILD_FEE_SATS))
 check_cmd "Child amount calculation" "CHILD_SEND_AMOUNT" "$CHILD_SEND_AMOUNT"
 
 # Convert to BTC
-CHILD_SEND_BTC=$(awk -v s="$CHILD_SEND_SATS" 'BEGIN { printf "%.8f", s/100000000 }')
+CHILD_SEND_BTC=$(awk -v change="$CHANGE_AMOUNT" -v fee="$CHILD_FEE_SATS" 'BEGIN { printf "%.8f", (change - fee) / 100000000 }')
 
 # STUDENT TASK: Create the outputs JSON structure
 CHILD_OUTPUTS="{\"$CHILD_RECIPIENT\":$CHILD_SEND_BTC}"
@@ -373,7 +373,7 @@ TIMELOCK_OUTPUTS="{\"$TIMELOCK_ADDRESS\":$TIMELOCK_BTC}"
 check_cmd "Timelock output creation" "TIMELOCK_OUTPUTS" "$TIMELOCK_OUTPUTS"
 
 # STUDENT TASK: Create the raw transaction with timelock
-TIMELOCK_TX=$(bitcoin-cli -regtest createrawtransaction "$TIMELOCK_INPUTS" "$TIMELOCK_OUTPUTS" 0 true)
+TIMELOCK_TX=$(bitcoin-cli -regtest createrawtransaction "$TIMELOCK_INPUTS" "$TIMELOCK_OUTPUTS" 0 false)
 check_cmd "Timelock transaction creation" "TIMELOCK_TX" "$TIMELOCK_TX"
 
 echo "Successfully created transaction with 10-block relative timelock!"
